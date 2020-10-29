@@ -670,10 +670,18 @@ function Tinv(p, dof) {
 		// numerical solutions
 		for (var i=0; i<loesungen.length; i++) {
 			if (results[i]!=undefined) {
-				if (String(results[i]) != loesungen[i]) {
-					allCorrect = false;
+				if (Array.isArray(results[i])) {			
+					if (!results[i].includes(loesungen[i])) {
+						allCorrect = false;
+					} else {
+						colors[i]='green';
+					}
 				} else {
-					colors[i]='green';
+					if (String(results[i]) != loesungen[i]) {
+						allCorrect = false;
+					} else {
+						colors[i]='green';
+					}
 				}
 			}
 		}
