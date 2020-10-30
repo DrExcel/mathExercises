@@ -131,6 +131,16 @@
 	}
 	
 	// funtions and variables for button events
+
+	function getLastTextFieldNo() {
+		var aArr = aufg[nr]['answerFlds'];
+		aCount = Object.keys(aArr).length;
+		for (a=0; a<aCount; a++) {
+			var aInputType = aufg[nr]['answerFlds'][a]['inputType'];
+			if (aInputType == 'text') lastTextFieldNo = a;
+		}
+	}	
+	
 	function prepareBtns() {
 		
 		if (detailType == 'all') {
@@ -153,6 +163,14 @@
 		else
 			location.reload();
 		//main();
+	}
+	
+	var showOnReturn = function solutionOnReturnKey(event) {
+		if (event.keyCode === 13) zeigen(typ);
+	}
+	
+	var showNew = function newTaskOnReturnKey(event) {
+		if (event.keyCode === 13) neue();
 	}
 	
 	function changeDetailsBtn() {
@@ -199,6 +217,16 @@
 				document.getElementById('detailBtn').innerHTML=detStr;
 				solve(typ);
 			}, false);
+		}
+		// event listener for return key on last textfield
+		getLastTextFieldNo();
+		if (lastTextFieldNo == (aCount-1)) {
+			var lstTxtFld = document.getElementById('solution'+lastTextFieldNo);
+			lstTxtFld.removeEventListener('keyup', showOnReturn, false);
+			lstTxtFld.addEventListener('keyup', showNew, false);
+//			lstTxtFld.addEventListener('keyup', function(event) {
+//				  if (event.keyCode === 13) { neue(); }
+//				}, false);
 		}
 		
 		//stop stop watch
@@ -642,7 +670,7 @@ function Tinv(p, dof) {
 			}
 			rechenZeichen.pop() // leeres Element am Ende entfernen
 		}
-		
+		console.log('nach checksign');
 		/*
 		// radio buttons
 		for (var a=0; a<1; a++) {
@@ -668,15 +696,19 @@ function Tinv(p, dof) {
 		}
 		
 		// numerical solutions
+		console.log('loesungen.length',loesungen.length);
 		for (var i=0; i<loesungen.length; i++) {
+			console.log('results[i] ist',results[i]);
 			if (results[i]!=undefined) {
-				if (Array.isArray(results[i])) {			
+				if (Array.isArray(results[i])) {	
+					console.log('ist array');
 					if (!results[i].includes(loesungen[i])) {
 						allCorrect = false;
 					} else {
 						colors[i]='green';
 					}
 				} else {
+					console.log('KEIN array');
 					if (String(results[i]) != loesungen[i]) {
 						allCorrect = false;
 					} else {
@@ -856,7 +888,7 @@ function Tinv(p, dof) {
 		colors = [], colorsSign = [],
 		checkMarks = [], 
 		btnResult, x, z,
-		buttonArea,
+		buttonArea, lastTextFieldNo, 
 		reloadBtn,
 		el,
 		nr,
@@ -1025,12 +1057,20 @@ function Tinv(p, dof) {
 		buttonArea = document.getElementById('buttonArea');
 		buttonArea.innerHTML = 	'<button type="button" id="submitBtn" tabindex="100" style="background-color: blue; color: white; border-radius: 25px; padding: 6px; border:0; font-size: large">&nbsp;Prüfen&nbsp;</button>';
 		
+		// ========================
 		// prepare event listeners
+		// ========================
 		var submitBtn = document.getElementById('submitBtn'); // button click
 		submitBtn.addEventListener('click', function() {zeigen(typ)}, false);
 		submitBtn.addEventListener('keyup', function(event) {
 			  if (event.keyCode === 13) { zeigen(typ); }
-			}, false);
+			}, false);		
+		// return key on last textfield triggers check button
+		getLastTextFieldNo();	
+		if (lastTextFieldNo == (aCount-1)) {
+			var lstTxtFld = document.getElementById('solution'+lastTextFieldNo);
+			lstTxtFld.addEventListener('keyup', showOnReturn, false);
+		}
 		
 		// set stop watch
 		timeStart = Date.now();
