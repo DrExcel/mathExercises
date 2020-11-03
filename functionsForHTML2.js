@@ -131,6 +131,16 @@
 	}
 	
 	// funtions and variables for button events
+
+	function getLastTextFieldNo() {
+		var aArr = aufg[nr]['answerFlds'];
+		aCount = Object.keys(aArr).length;
+		for (var a=0; a<aCount; a++) {
+			var aInputType = aufg[nr]['answerFlds'][a]['inputType'];
+			if (aInputType == 'text') lastTextFieldNo = a;
+		}
+	}	
+	
 	function prepareBtns() {
 		
 		if (detailType == 'all') {
@@ -153,6 +163,14 @@
 		else
 			location.reload();
 		//main();
+	}
+	
+	var showOnReturn = function solutionOnReturnKey(event) {
+		if (event.keyCode === 13) zeigen(typ);
+	}
+	
+	var showNew = function newTaskOnReturnKey(event) {
+		if (event.keyCode === 13) neue();
 	}
 	
 	function changeDetailsBtn() {
@@ -200,6 +218,16 @@
 				solve(typ);
 			}, false);
 		}
+		// event listener for return key on last textfield
+		getLastTextFieldNo();
+		if (lastTextFieldNo == (aCount-1)) {
+			var lstTxtFld = document.getElementById('solution'+lastTextFieldNo);
+			lstTxtFld.removeEventListener('keyup', showOnReturn, false);
+			lstTxtFld.addEventListener('keyup', showNew, false);
+//			lstTxtFld.addEventListener('keyup', function(event) {
+//				  if (event.keyCode === 13) { neue(); }
+//				}, false);
+		}
 		
 		//stop stop watch
 		timeEnd = Date.now();
@@ -215,7 +243,7 @@ function ausgabe() {
 
 	var aArr = aufg[nr]['answerFlds'];
 	var aCount = Object.keys(aArr).length;
-	for (a=0; a<aCount; a++) {	
+	for (var a=0; a<aCount; a++) {	
 		var formel = document.getElementById('solution'+a).value
 		formel = formel.replace(/\^0.5/, '^{0.5}');
 		document.getElementById('render'+a).innerHTML = '\\('+formel+'\\)';
@@ -230,11 +258,12 @@ function ausgabe() {
 		aArr = aufg[nr]['answerFlds'];
 		aCount = Object.keys(aArr).length;
 		
-		for (a=0; a<aCount; a++) {
+		for (var a=0; a<aCount; a++) {
 
 			aWidth = aufg[nr]['answerWidth'];
 			aLabel = aufg[nr]['answerFlds'][a]['label'];
 			aInputType = aufg[nr]['answerFlds'][a]['inputType'];
+			virtualKeyboard = (!aufg[nr]['answerFlds'][a]['virtualKeyboard'] || platform=='Win32') ? false : true;
 			
 			if (a==0) autofocus='autofocus'; else autofocus='';
 			var oninput = render ?  ' oninput="ausgabe()"' : '';
@@ -245,6 +274,10 @@ function ausgabe() {
 					
 					answerStr += '<label for "solution'+a+'" style="min-width: '+aWidth+'em; display: inline-block;">'+aLabel+'</label>';
 					answerStr += '<input type="text" id="solution'+a+'" size="'+aSize+'" tabindex="'+(a+1)+'" value="" '+autofocus+oninput+'> <button type="button" id="helpBtn'+a+'" tabindex="110">&#9432;</button>\n';
+					if (virtualKeyboard) {
+						answerStr += '&nbsp;<button type="button" id="subBtn'+a+'" tabindex="500" style="background: blue; background-color: blue; color: white; border-radius: 5px; padding: 3px; box-shadow: none; outline: none; border: 0; font-size: large;">&nbsp;_&nbsp;</button>';
+						answerStr += '&nbsp;<button type="button" id="supBtn'+a+'" tabindex="500" style="background: blue; background-color: blue; color: white; border-radius: 5px; padding: 3px; box-shadow: none; outline: none; border: 0; font-size: large;">&nbsp;^&nbsp;</button>';
+					}
 					if (render) answerStr += '<br><span id="render'+a+'" style="padding:5px 0px 0px '+(aWidth*19)+'px;"></span>';
 					break;
 					
@@ -280,9 +313,23 @@ function ausgabe() {
 		// Ausgabe
 		document.getElementById('antworten').innerHTML = answerStr; 
 		
-		// prepare EventListeners for input help and rendering
-		for (a=0; a<aCount; a++) {
-			// rendering
+		// prepare EventListeners for buttons
+		
+		function virtualBtn(j, btnName, btnSymbol) {
+			var btn = document.getElementById(btnName+j);
+			if (btn != undefined && platform!='Win32')
+				btn.addEventListener('click', function() {
+						var id = this.getAttribute('id').slice(-1);
+						var el = document.getElementById('solution'+id);
+						el.value = el.value+btnSymbol;
+						el.focus();
+				}, false);	
+		}
+		
+		
+		for (var a=0; a<aCount; a++) {
+			
+			// help button
 			var helpBtn = document.getElementById('helpBtn'+a);
 			helpBtn.addEventListener('click', function() {
 					var id=this.getAttribute('id').slice(-1);
@@ -291,6 +338,12 @@ function ausgabe() {
 					showHelp(id, helpText);
 				
 			}, false);
+			
+			// buttons of virtual board 
+			if (platform!='Win32') { // only for mobile devices
+				virtualBtn(a, 'subBtn', '_');
+				virtualBtn(a, 'supBtn', '^');
+			}
 			
 			// render
 			//if (render) document.getElementById('render'+a).oninput = ausgabe();
@@ -605,7 +658,7 @@ function Tinv(p, dof) {
 			// solutions.push(document.getElementById('solution'+i).value);
 			if (solutions[i] != '') {
 				if (aufg[nr]['answerFlds'][i]['inputType']=='textarea') {
-					splitted = solutions[i].split(regEx);
+					splitted = solutions[i].trim().split(regEx);
 					for (var u=0; u<splitted.length; u++){
 						if (splitted[u].search(',')==-1) {
 							loesungen.push(splitted[u].toLowerCase());  // kein Komma
@@ -642,7 +695,7 @@ function Tinv(p, dof) {
 			}
 			rechenZeichen.pop() // leeres Element am Ende entfernen
 		}
-		
+		console.log('nach checksign');
 		/*
 		// radio buttons
 		for (var a=0; a<1; a++) {
@@ -668,15 +721,19 @@ function Tinv(p, dof) {
 		}
 		
 		// numerical solutions
+		console.log('loesungen.length',loesungen.length);
 		for (var i=0; i<loesungen.length; i++) {
+			console.log('results[i] ist',results[i]);
 			if (results[i]!=undefined) {
-				if (Array.isArray(results[i])) {			
+				if (Array.isArray(results[i])) {	
+					console.log('ist array');
 					if (!results[i].includes(loesungen[i])) {
 						allCorrect = false;
 					} else {
 						colors[i]='green';
 					}
 				} else {
+					console.log('KEIN array');
 					if (String(results[i]) != loesungen[i]) {
 						allCorrect = false;
 					} else {
@@ -856,11 +913,12 @@ function Tinv(p, dof) {
 		colors = [], colorsSign = [],
 		checkMarks = [], 
 		btnResult, x, z,
-		buttonArea,
+		buttonArea, lastTextFieldNo, 
 		reloadBtn,
 		el,
 		nr,
 		detailLevel, maxDetailLevel, btnTxtMore, btnTxtLess;
+	var virtualKeyboard;
 	var vars;
 	var alt;
 	var score, duration, topTime;
@@ -930,12 +988,11 @@ function Tinv(p, dof) {
 		console.log('tasks',tasks);
 		i = getRandomInt(0,tasks.length);
 		nr = parseInt(tasks[i]);
-		console.log('nr aktuelle Aufgabe',nr);
 
 		// +++++++++ nur für Test ++++++++++
 		if (teste != undefined) nr = teste;
 		// +++++++++++++++++++++++++++++++++
-		
+		console.log('nr aktuelle Aufgabe',nr);		
 		
 		// ----------------------------
 		//  Cookies & Local Storage
@@ -969,18 +1026,18 @@ function Tinv(p, dof) {
 				}
 			}
 		}		
-		sessionStorage.setItem('confTaskNo',nr);
+		sessionStorage.setItem('confTaskNo',nr);	
 
 		// +++++++++ nur für Test ++++++++++
 		if (teste != undefined) nr = teste;
-		// +++++++++++++++++++++++++++++++++		
+		// +++++++++++++++++++++++++++++++++
 		
 		// preparations for solution with steps
 		if (detailType=='steps') {
 			var aArr = aufg[nr]['steps'];
 			len = Object.keys(aArr).length;
 		}
-
+		
 		// detail level of solution
 		prepareBtns();
 		detailLevel = parseInt(sessionStorage.getItem('TW_detailLevel'));
@@ -1025,12 +1082,20 @@ function Tinv(p, dof) {
 		buttonArea = document.getElementById('buttonArea');
 		buttonArea.innerHTML = 	'<button type="button" id="submitBtn" tabindex="100" style="background-color: blue; color: white; border-radius: 25px; padding: 6px; border:0; font-size: large">&nbsp;Prüfen&nbsp;</button>';
 		
+		// ========================
 		// prepare event listeners
+		// ========================
 		var submitBtn = document.getElementById('submitBtn'); // button click
 		submitBtn.addEventListener('click', function() {zeigen(typ)}, false);
 		submitBtn.addEventListener('keyup', function(event) {
 			  if (event.keyCode === 13) { zeigen(typ); }
-			}, false);
+			}, false);		
+		// return key on last textfield triggers check button
+		getLastTextFieldNo();	
+		if (lastTextFieldNo == (aCount-1)) {
+			var lstTxtFld = document.getElementById('solution'+lastTextFieldNo);
+			lstTxtFld.addEventListener('keyup', showOnReturn, false);
+		}
 		
 		// set stop watch
 		timeStart = Date.now();
