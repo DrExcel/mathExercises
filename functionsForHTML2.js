@@ -294,7 +294,7 @@ function ausgabe() {
 					
 					var options = aufg[nr]['answerFlds'][a]['options'];
 					for (var i=0; i<options.length; i++) {
-						answerStr += '<input type="radio" name="'+aLabel+'" id="sol'+aLabel+'id'+i+'" value="'+options[i]+'" >';
+						answerStr += '<input type="radio" name="'+aLabel+'" id="sol'+aLabel+'id'+i+'" value="'+options[i]+'">';
 						answerStr += '<label for "sol'+aLabel+'id'+i+'" >'+options[i]+'</label><br>';
 						}
 					break;
@@ -679,7 +679,7 @@ function Tinv(p, dof) {
 							loesungen.push(parseFloat(splitted[u].replace(',','.')).toFixed(2).replace('.',',').toLowerCase());
 					}
 				} else {
-					loesungen.push(solutions[i]);
+					loesungen.push(solutions[i].trim());
 				}
 			} else {
 				loesungen.push('9999');
@@ -1092,7 +1092,7 @@ function Tinv(p, dof) {
 	
 		// draw correct button
 		buttonArea = document.getElementById('buttonArea');
-		buttonArea.innerHTML = 	'<button type="button" id="submitBtn" tabindex="100" style="background-color: blue; color: white; border-radius: 25px; padding: 6px; border:0; font-size: large">&nbsp;Prüfen&nbsp;</button>';
+		buttonArea.innerHTML = 	'<button type="button" id="submitBtn" tabindex="100" style="background-color: blue; color: white; border-radius: 25px; padding: 6px; border:0; font-size: large;">&nbsp;Prüfen&nbsp;</button>';
 		
 		// ========================
 		// prepare event listeners
