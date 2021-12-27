@@ -149,8 +149,8 @@
 			maxDetailLevel = 1;
 		}
 		if (detailType == 'step') {
-			btnTxtMore = '&nbsp;Schritt&nbsp;';
-			btnTxtLess = '&nbsp;von vorne&nbsp;';
+			btnTxtMore = '&nbsp;Zeige Lösungsschritt&nbsp;';
+			btnTxtLess = '&nbsp;Lösungsschritte von vorne&nbsp;';
 			maxDetailLevel = len;
 		}
 	}
@@ -679,7 +679,7 @@ function Tinv(p, dof) {
 							loesungen.push(parseFloat(splitted[u].replace(',','.')).toFixed(2).replace('.',',').toLowerCase());
 					}
 				} else {
-					loesungen.push(solutions[i].trim());
+					loesungen.push(solutions[i]);
 				}
 			} else {
 				loesungen.push('9999');
@@ -1045,7 +1045,7 @@ function Tinv(p, dof) {
 		// +++++++++++++++++++++++++++++++++
 		
 		// preparations for solution with steps
-		if (detailType=='steps') {
+		if (detailType=='step') {
 			var aArr = aufg[nr]['steps'];
 			len = Object.keys(aArr).length;
 		}
