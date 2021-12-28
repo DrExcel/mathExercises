@@ -26,7 +26,8 @@
 	
 	function str(zahl,stellen) {
 		if (stellen == undefined) stellen=0;
-		return komma(zahl.toFixed(stellen));
+		// return komma(zahl.toFixed(stellen));
+        return zahl.toFixed(stellen).toString().replace('.',',');
 	}
 	
 	// general function to replace placeholders in task string
@@ -144,7 +145,7 @@
 	function prepareBtns() {
 		
 		if (detailType == 'all') {
-			btnTxtMore = '&nbsp;Mehr Details&nbsp;';
+			btnTxtMore = '&nbsp;Mehr Lösungsdetails&nbsp;';
 			btnTxtLess = '&nbsp;Weniger Details&nbsp;';
 			maxDetailLevel = 1;
 		}
