@@ -679,7 +679,7 @@ function Tinv(p, dof) {
 							loesungen.push(parseFloat(splitted[u].replace(',','.')).toFixed(2).replace('.',',').toLowerCase());
 					}
 				} else {
-					loesungen.push(solutions[i]);
+					loesungen.push(solutions[i].trim());
 				}
 			} else {
 				loesungen.push('9999');
